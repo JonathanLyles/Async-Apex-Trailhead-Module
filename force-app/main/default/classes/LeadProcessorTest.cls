@@ -23,7 +23,46 @@
 private class LeadProcessorTest {
 
     @isTest
-    static void myUnitTest() {
-        // TO DO: implement unit test
+    static void testLeadSourceUpdate() {
+        //Create and insert 200 leads 
+        List<Lead> leadsToInsert = new List<Lead>();
+        for(Integer i = 0; i < 200; i++){
+            Lead leadToInsert = new Lead(LastName = 'Test Lead ' + i, Company = 'Test Company');
+            leadsToInsert.add(leadToInsert);
+        }
+        insert leadsToInsert;
+        //Update the Lead.LeadSource to 'Dreamforce'
+        List<Lead> leadsToUpdate = new List<Lead>();
+        for(Lead leadToUpdate : leadsToInsert){
+            leadToUpdate.LeadSource = 'Dreamforce';
+            leadsToUpdate.add(leadToUpdate);
+        }
+        update leadsToUpdate;
+
+        List<Id> updatedLeadIds = new List<Id>();
+        for(Lead leadToUpdate : leadsToUpdate){
+            updatedLeadIds.add(leadToUpdate.Id);
+        }
+
+        Test.startTest();
+        
+        LeadProcessor leadProcessor = new LeadProcessor();
+        Id batchId = Database.executeBatch(leadProcessor);
+
+
+        Test.stopTest();
+
+        //Check Leads
+        List<Lead> updatedLeads = [SELECT Id, LeadSource FROM Lead WHERE Id IN :updatedLeadIds];
+        System.assertEquals(200, updatedLeads.size(), 'List size not the expected size.');
+
+        //Check LeadSource for each Lead
+        for(Lead updatedLead : updatedLeads){
+            System.assertEquals('Dreamforce', updatedLead.LeadSource, 'LeadSource does not have the expected value');
+        }
+
+        
+
+
     }
 }
