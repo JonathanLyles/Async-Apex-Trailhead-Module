@@ -22,7 +22,7 @@
 @isTest
 private class AddPrimaryContactTest {
 
-    @isTest
+    @TestSetup
     static void setup() {
         // TO DO: implement unit test
         List<Account> accountList = new List<Account>();
@@ -36,9 +36,28 @@ private class AddPrimaryContactTest {
     }
 
     static testmethod void testQueueable(){
-        Id conNY = [SELECT Id FROM CONTACT WHERE MailingState = 'NY'][0].Id;
-        Id conCA = [SELECT Id FROM CONTACT WHERE MailingState = 'CA'][0].Id;
         
+        Contact conNY = new Contact(LastName = 'NewYork-Contact');
+        Contact conCA = new Contact(LastName = 'California-Contact');
+        
+        List<Contact> contactList = new List<Contact>();
+        contactList.add(conNY);
+        contactList.add(conCA);
+        insert contactList;
 
+      
+
+        AddPrimaryContact forNY = new AddPrimaryContact((sObject) conNY,'NY');
+        AddPrimaryContact forCA = new AddPrimaryContact((sObject) conCA,'CA');
+
+        Test.startTest();
+        
+        Id jobNY = System.enqueueJob(forNY);
+        Id jobCA = System.enqueueJob(forCA);
+
+        Test.stopTest();
+        
+        List<Account> accList = [SELECT Id,(SELECT Id FROM CONTACTS WHERE Id = :conCA.Id) FROM ACCOUNT];
+        System.assertEquals(50, accList.size(),'Number of CA Account with specified primary contact not the expected amount');
     }
 }
