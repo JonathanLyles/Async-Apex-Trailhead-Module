@@ -2,8 +2,8 @@ public with sharing class AddPrimaryContact implements Queueable {
     Contact con;
     String state;
 
-    public AddPrimaryContact(sObject con, String state) {
-        this.con = (Contact) con;
+    public AddPrimaryContact(Contact con, String state) {
+        this.con = con;
         this.state = state;
     }
 
@@ -15,6 +15,6 @@ public with sharing class AddPrimaryContact implements Queueable {
             newContact.AccountId = acc.Id;
             contactList.add(newContact);
         }
-        update contactList;
+        insert contactList;
     }
 }

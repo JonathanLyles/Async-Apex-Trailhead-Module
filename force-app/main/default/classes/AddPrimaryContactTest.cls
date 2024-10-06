@@ -47,17 +47,22 @@ private class AddPrimaryContactTest {
 
       
 
-        AddPrimaryContact forNY = new AddPrimaryContact((sObject) conNY,'NY');
-        AddPrimaryContact forCA = new AddPrimaryContact((sObject) conCA,'CA');
+        AddPrimaryContact forCA = new AddPrimaryContact(conCA,'CA');
 
         Test.startTest();
         
-        Id jobNY = System.enqueueJob(forNY);
+       
         Id jobCA = System.enqueueJob(forCA);
 
         Test.stopTest();
         
-        List<Account> accList = [SELECT Id,(SELECT Id FROM CONTACTS WHERE Id = :conCA.Id) FROM ACCOUNT];
-        System.assertEquals(50, accList.size(),'Number of CA Account with specified primary contact not the expected amount');
+        List<Account> accList = [SELECT Id, (SELECT Id, LastName FROM Contacts) FROM Account WHERE BillingState = 'CA'];
+        Integer counter = 0;
+        for(Account acc : accList){
+            if( acc.Contacts[0].LastName == 'California-Contact'){
+                counter += 1;
+            }
+        }
+        System.assertEquals(50, counter, 'wrong number of accounts with this contact');
     }
 }
